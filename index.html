@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>KiBuddy - Smart Finance Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/style.css"> <!-- Обновленный путь к CSS -->
+</head>
+
+<body>
+    <div id="splash-screen" class="splash-screen">
+        <div class="logo-container">
+            <img src="icons/KI.png" alt="KiBuddy Logo" class="splash-logo">
+        </div>
+    </div>
+
+    <!-- Auth Screen -->
+    <div id="auth-screen" class="auth-screen">
+        <div class="auth-container">
+            <div class="auth-header">
+                <div class="logo-icon">
+                    <i class="fas fa-piggy-bank"></i>
+                </div>
+                <h1>KiBuddy</h1>
+                <p>Your personal finance companion</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form">
+                <h2>Login</h2>
+                <div class="form-group">
+                    <label for="login-email"><i class="fas fa-envelope"></i></label>
+                    <input type="email" id="login-email" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password"><i class="fas fa-lock"></i></label>
+                    <input type="password" id="login-password" placeholder="Password" required>
+                </div>
+                <button type="button" id="login-btn" class="auth-btn">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <p class="auth-switch">
+                    Don't have an account? <a href="#" id="show-register">Sign Up</a>
+                </p>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form" style="display: none;">
+                <h2>Create Account</h2>
+                <div class="form-group">
+                    <label for="register-name"><i class="fas fa-user"></i></label>
+                    <input type="text" id="register-name" placeholder="Full Name" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-email"><i class="fas fa-envelope"></i></label>
+                    <input type="email" id="register-email" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <label for="register-currency"><i class="fas fa-coins"></i> Currency</label>
+                    <select id="register-currency" required>
+                        <option value="USD" selected>USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="GBP">GBP (£)</option>
+                        <option value="UAH">UAH (₴)</option>
+                        <option value="KZT">KZT (₸)</option>
+                        <option value="JPY">JPY (¥)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="register-password"><i class="fas fa-lock"></i></label>
+                    <input type="password" id="register-password" placeholder="Password" required readonly
+                        onfocus="this.removeAttribute('readonly');">
+                </div>
+                <button type="button" id="register-btn" class="auth-btn">
+                    <i class="fas fa-user-plus"></i> Register
+                </button>
+                <p class="auth-switch">
+                    Already have an account? <a href="#" id="show-login">Login</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App (hidden initially) -->
+    <div id="app-container" style="display: none;">
+        <!-- App Header -->
+        <header class="app-header">
+            <div class="header-top">
+                <h1 class="app-title">My Budget: <span id="budget-amount">$0</span></h1>
+                <div id="current-date" class="current-date">Loading...</div>
+            </div>
+            <div class="user-info">
+                <span id="user-name"></span>
+                <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+
+            <div class="savings-progress-container">
+                <div class="progress-labels">
+                    <span id="savings-text">0% to goal</span>
+                    <span id="savings-amount">$0/$2000</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="savings-progress"></div>
+                </div>
+            </div>
+
+            <div class="date-navigation">
+                <button id="prev-period" class="nav-button"><i class="fas fa-chevron-left"></i></button>
+                <input type="date" id="date-selector" class="date-picker">
+                <button id="next-period" class="nav-button"><i class="fas fa-chevron-right"></i></button>
+            </div>
+
+            <div class="period-selector">
+                <button class="period-btn active" data-period="day">
+                    <span>Day</span>
+                </button>
+                <button class="period-btn" data-period="week">
+                    <span>Week</span>
+                </button>
+                <button class="period-btn" data-period="month">
+                    <span>Month</span>
+                </button>
+                <button class="period-btn" data-period="year">
+                    <span>Year</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <!-- Expenses Page -->
+            <div id="expenses-page" class="page active">
+                <h2 class="page-title"><i class="fas fa-money-bill-wave"></i> Expenses</h2>
+                <div class="transaction-list" id="expenses-list">
+                    <div class="no-data">
+                        <i class="fas fa-receipt"></i>
+                        <p>No expenses yet</p>
+                    </div>
+                </div>
+                <button class="add-btn" id="add-expense">
+                    <i class="fas fa-plus-circle"></i> Add Expense
+                </button>
+            </div>
+
+            <!-- Income Page -->
+            <div id="income-page" class="page">
+                <h2 class="page-title"><i class="fas fa-hand-holding-usd"></i> Income</h2>
+                <div class="transaction-list" id="income-list">
+                    <div class="no-data">
+                        <i class="fas fa-coins"></i>
+                        <p>No income yet</p>
+                    </div>
+                </div>
+                <button class="add-btn" id="add-income">
+                    <i class="fas fa-plus-circle"></i> Add Income
+                </button>
+            </div>
+
+            <!-- Analysis Page -->
+            <div id="analysis-page" class="page">
+                <h2 class="page-title"><i class="fas fa-chart-pie"></i> Analysis</h2>
+                <div class="chart-container">
+                    <canvas id="budget-chart"></canvas>
+                    <div class="chart-placeholder" id="chart-placeholder">
+                        <i class="fas fa-chart-bar"></i>
+                        <p>No data available</p>
+                    </div>
+                </div>
+                <div class="stats-container">
+                    <div class="stat-card income-card">
+                        <h3>Total Income</h3>
+                        <p id="total-income">$0</p>
+                    </div>
+                    <div class="stat-card expense-card">
+                        <h3>Total Expenses</h3>
+                        <p id="total-expenses">$0</p>
+                    </div>
+                    <div class="stat-card balance-card">
+                        <h3>Balance</h3>
+                        <p id="balance">$0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Goals Page -->
+            <div id="goals-page" class="page">
+                <h2 class="page-title"><i class="fas fa-bullseye"></i> Savings Goal</h2>
+                <div class="goal-card">
+                    <div class="goal-form">
+                        <div class="form-group">
+                            <label for="goal-amount"><i class="fas fa-dollar-sign"></i> Target Amount</label>
+                            <input type="number" id="goal-amount" min="0" step="1" value="2000">
+                        </div>
+                        <div class="form-group">
+                            <label for="goal-date"><i class="fas fa-calendar-check"></i> Target Date</label>
+                            <input type="date" id="goal-date">
+                        </div>
+                        <button class="save-btn" id="save-goal">
+                            <i class="fas fa-save"></i> Save Goal
+                        </button>
+                    </div>
+                    <div class="goal-progress">
+                        <h3><i class="fas fa-chart-line"></i> Progress</h3>
+                        <div class="progress-info">
+                            <div class="progress-item">
+                                <span class="progress-label">Current Savings:</span>
+                                <span id="current-savings" class="progress-value">$0</span>
+                            </div>
+                            <div class="progress-item">
+                                <span class="progress-label">Target Amount:</span>
+                                <span id="target-amount-display" class="progress-value">$2000</span>
+                            </div>
+                            <div class="progress-item highlight">
+                                <span class="progress-label">Daily Needed:</span>
+                                <span id="daily-needed" class="progress-value">$0/day</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="limits-page" class="page">
+                <h2 class="page-title"><i class="fas fa-tachometer-alt"></i> Spending Limits</h2>
+
+                <div id="limits-status" class="limits-status">Loading status...</div>
+
+                <div class="limits-container" id="limits-list">
+                    <div class="no-limits">
+                        <i class="fas fa-sliders-h"></i>
+                        <p>No spending limits set</p>
+                    </div>
+                </div>
+
+                <button class="add-btn" id="add-limit">
+                    <i class="fas fa-plus-circle"></i> Add Limit
+                </button>
+            </div>
+
+
+
+            <!-- KiTips Page -->
+            <div id="kitips-page" class="page">
+                <h2 class="page-title"><i class="fas fa-lightbulb"></i> KiTips</h2>
+                <div class="kitips-container">
+                    <div class="tip-card">
+                        <div class="tip-header">
+                            <span class="tip-number">1</span>
+                            <h3>50/30/20 Budget Rule</h3>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="tip-content">
+                            <p>The golden rule of budgeting:</p>
+                            <ul>
+                                <li><strong>50%</strong> for Needs (housing, food, transportation)</li>
+                                <li><strong>30%</strong> for Wants (entertainment, hobbies)</li>
+                                <li><strong>20%</strong> for Savings & Debt repayment</li>
+                            </ul>
+                        </div>
+                        <button class="mark-completed">Mark as Completed</button>
+                    </div>
+
+                    <div class="tip-card">
+                        <div class="tip-header">
+                            <span class="tip-number">2</span>
+                            <h3>Emergency Fund</h3>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="tip-content">
+                            <p>Why you need an emergency fund:</p>
+                            <ul>
+                                <li>Covers 3-6 months of living expenses</li>
+                                <li>Protects against unexpected events</li>
+                                <li>Reduces financial stress</li>
+                                <li>Start small - save $500 first</li>
+                            </ul>
+                        </div>
+                        <button class="mark-completed">Mark as Completed</button>
+                    </div>
+
+                    <div class="tip-card">
+                        <div class="tip-header">
+                            <span class="tip-number">3</span>
+                            <h3>Smart Debt Management</h3>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="tip-content">
+                            <p>How to handle debt wisely:</p>
+                            <ul>
+                                <li>Pay high-interest debts first</li>
+                                <li>Never miss minimum payments</li>
+                                <li>Consider debt consolidation</li>
+                                <li>Avoid new debt while paying old</li>
+                            </ul>
+                        </div>
+                        <button class="mark-completed">Mark as Completed</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="navbar">
+            <button class="nav-btn active" data-page="expenses-page">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Expenses</span>
+            </button>
+            <button class="nav-btn" data-page="income-page">
+                <i class="fas fa-hand-holding-usd"></i>
+                <span>Income</span>
+            </button>
+            <button class="nav-btn" data-page="analysis-page">
+                <i class="fas fa-chart-pie"></i>
+                <span>Analysis</span>
+            </button>
+            <button class="nav-btn" data-page="goals-page">
+                <i class="fas fa-bullseye"></i>
+                <span>Goals</span>
+            </button>
+            <button class="nav-btn" data-page="limits-page">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Limits</span>
+            </button>
+            <button class="nav-btn" data-page="kitips-page">
+                <i class="fas fa-lightbulb"></i>
+                <span>KiTips</span>
+            </button>
+        </nav>
+
+
+        <!-- Modals -->
+
+        <!-- Модалка добавления лимита -->
+        <div id="limit-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3><i class="fas fa-plus-circle"></i> Add Spending Limit</h3>
+                <div class="form-group">
+                    <label for="limit-category"><i class="fas fa-tag"></i> Category</label>
+                    <input type="text" id="limit-category" placeholder="e.g. Groceries">
+                </div>
+                <div class="form-group">
+                    <label for="limit-amount"><i class="fas fa-dollar-sign"></i> Monthly Limit ($)</label>
+                    <input type="number" id="limit-amount" min="1" step="1" placeholder="100">
+                </div>
+                <div class="form-group">
+                    <label class="auto-adjust-label">
+                        <input type="checkbox" id="auto-adjust-limit">
+                        <span>Auto-adjust based on spending</span>
+                    </label>
+
+                </div>
+                <button id="confirm-limit" class="save-btn">
+                    <i class="fas fa-save"></i> Save Limit
+                </button>
+            </div>
+        </div>
+
+        <!-- Модалка настроек лимитов -->
+        <div id="limit-settings-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3><i class="fas fa-cogs"></i> Limit Settings</h3>
+
+                <div class="form-group">
+                    <label for="limit-warning-threshold"><i class="fas fa-exclamation-triangle"></i> Warning Threshold
+                        (%)</label>
+                    <input type="number" id="limit-warning-threshold" min="0" max="100" value="80">
+                </div>
+
+                <div class="form-group">
+                    <label for="auto-adjust-percentage"><i class="fas fa-sync-alt"></i> Auto Adjust Percentage
+                        (%)</label>
+                    <input type="number" id="auto-adjust-percentage" min="100" max="500" value="110">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="enable-limit-notifications" checked>
+                        Enable Notifications
+                    </label>
+                </div>
+
+                <button id="save-limit-settings" class="save-btn">
+                    <i class="fas fa-save"></i> Save Settings
+                </button>
+            </div>
+        </div>
+
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="scripts/app.js"></script> <!-- Обновленный путь к JS -->
+</body>
+
+</html>
