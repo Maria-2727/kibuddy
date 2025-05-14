@@ -897,7 +897,261 @@ setTimeout(() => {
             
             updateTipsProgress();
         }
+// Add these functions to your app object
+function populateCategoryDropdown() {
+    const categorySelect = document.getElementById('limit-category');
+    categorySelect.innerHTML = '<option value="">Select category</option>';
+    
+    // Get all unique expense categories
+    const categories = [...new Set(app.data.expenses.map(e => e.category))];
+    
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        categorySelect.appendChild(option);
+    });
+}
 
+// Update the saveLimit function
+function saveLimit() {
+    const category = ui.limitCategory.value.trim();
+    const amount = parseFloat(ui.limitAmount.value);
+    const period = ui.limitPeriod.value;
+    
+    if (!category || isNaN(amount)) {
+        alert('Please fill all fields correctly');
+        return;
+    }
+    
+    if (ui.autoAdjustLimit.checked) {
+        const expenses = app.data.expenses.filter(e => e.category === category);
+        const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
+        const adjustedAmount = totalSpent * (app.data.limitSettings.autoAdjustPercentage / 100);
+        
+        if (adjustedAmount > amount) {
+            if (!confirm(`Auto-adjust will set limit to ${formatMoney(adjustedAmount)} based on your spending history. Continue?`)) {
+                return;
+            }
+            ui.limitAmount.value = adjustedAmount.toFixed(2);
+        }
+    }
+    
+    app.data.limits.push({
+        id: Date.now(),
+        category,
+        amount: parseFloat(ui.limitAmount.value),
+        period,
+        remaining: parseFloat(ui.limitAmount.value) // Initialize remaining amount
+    });
+    
+    saveLimits();
+    loadLimits();
+    ui.limitModal.style.display = 'none';
+    ui.limitCategory.value = '';
+    ui.limitAmount.value = '';
+    ui.autoAdjustLimit.checked = false;
+    
+    showAlert('Limit added successfully!', 'success');
+}
+
+// Update the checkLimits function to handle different periods
+function checkLimits() {
+    if (!app.data.limitSettings.enableNotifications) return;
+    
+    const now = new Date();
+    const currentDate = now.toISOString().split('T')[0];
+    
+    app.data.limits.forEach(limit => {
+        let relevantExpenses = [];
+        const categoryExpenses = app.data.expenses.filter(e => e.category === limit.category);
+        
+        switch(limit.period) {
+            case 'daily':
+                relevantExpenses = categoryExpenses.filter(e => e.date === currentDate);
+                break;
+            case 'weekly':
+                const weekStart = new Date(now);
+                weekStart.setDate(now.getDate() - now.getDay());
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6);
+                
+                relevantExpenses = categoryExpenses.filter(e => {
+                    const expenseDate = new Date(e.date);
+                    return expenseDate >= weekStart && expenseDate <= weekEnd;
+                });
+                break;
+            case 'monthly':
+                relevantExpenses = categoryExpenses.filter(e => {
+                    const expenseDate = new Date(e.date);
+                    return expenseDate.getMonth() === now.getMonth() && 
+                           expenseDate.getFullYear() === now.getFullYear();
+                });
+                break;
+            case 'yearly':
+                relevantExpenses = categoryExpenses.filter(e => {
+                    const expenseDate = new Date(e.date);
+                    return expenseDate.getFullYear() === now.getFullYear();
+                });
+                break;
+        }
+        
+        const spent = relevantExpenses.reduce((sum, e) => sum + e.amount, 0);
+        const percentage = (spent / limit.amount) * 100;
+        
+        // Update remaining amount
+        limit.remaining = Math.max(0, limit.amount - spent);
+        
+        if (percentage >= 100) {
+            showAlert(`Limit exceeded! You've spent ${formatMoney(spent)} of ${formatMoney(limit.amount)} in ${limit.category} (${limit.period})`, 'error');
+        } else if (percentage >= app.data.limitSettings.warningThreshold) {
+            showAlert(`Approaching limit: ${formatMoney(spent)} of ${formatMoney(limit.amount)} in ${limit.category} (${limit.period})`, 'warning');
+        }
+    });
+    
+    saveLimits(); // Save the updated remaining amounts
+}
+
+// Update the loadLimits function to show period info
+function loadLimits() {
+    ui.limitsList.innerHTML = '';
+    
+    if (app.data.limits.length === 0) {
+        ui.limitsList.innerHTML = `
+            <div class="no-limits">
+                <i class="fas fa-sliders-h"></i>
+                <p>No spending limits set</p>
+            </div>
+        `;
+        ui.limitsStatus.textContent = 'No active limits';
+        return;
+    }
+    
+    const now = new Date();
+    const expensesByCategory = {};
+    
+    app.data.limits.forEach(limit => {
+        const categoryExpenses = app.data.expenses.filter(e => e.category === limit.category);
+        let relevantExpenses = [];
+        
+        switch(limit.period) {
+            case 'daily':
+                const today = now.toISOString().split('T')[0];
+                relevantExpenses = categoryExpenses.filter(e => e.date === today);
+                break;
+            case 'weekly':
+                const weekStart = new Date(now);
+                weekStart.setDate(now.getDate() - now.getDay());
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6);
+                
+                relevantExpenses = categoryExpenses.filter(e => {
+                    const expenseDate = new Date(e.date);
+                    return expenseDate >= weekStart && expenseDate <= weekEnd;
+                });
+                break;
+            case 'monthly':
+                relevantExpenses = categoryExpenses.filter(e => {
+                    const expenseDate = new Date(e.date);
+                    return expenseDate.getMonth() === now.getMonth() && 
+                           expenseDate.getFullYear() === now.getFullYear();
+                });
+                break;
+            case 'yearly':
+                relevantExpenses = categoryExpenses.filter(e => {
+                    const expenseDate = new Date(e.date);
+                    return expenseDate.getFullYear() === now.getFullYear();
+                });
+                break;
+        }
+        
+        const spent = relevantExpenses.reduce((sum, e) => sum + e.amount, 0);
+        const percentage = (spent / limit.amount) * 100;
+        
+        const limitItem = document.createElement('div');
+        limitItem.className = 'limit-item';
+        
+        if (percentage >= 100) {
+            limitItem.classList.add('danger');
+        } else if (percentage >= app.data.limitSettings.warningThreshold) {
+            limitItem.classList.add('warning');
+        }
+        
+        limitItem.innerHTML = `
+            <div class="limit-item-info">
+                <div class="limit-category">${limit.category} <span class="limit-period">(${limit.period})</span></div>
+                <div class="limit-progress">
+                    <div class="limit-progress-bar" style="width: ${Math.min(percentage, 100)}%"></div>
+                </div>
+                <div class="limit-remaining">Remaining: ${formatMoney(limit.amount - spent)}</div>
+            </div>
+            <div class="limit-details">
+                <div class="limit-amount">${formatMoney(limit.amount)}</div>
+                <div class="limit-used ${percentage >= 100 ? 'danger' : percentage >= app.data.limitSettings.warningThreshold ? 'warning' : ''}">
+                    ${formatMoney(spent)} (${percentage.toFixed(1)}%)
+                </div>
+            </div>
+            <button class="delete-limit" data-id="${limit.id}">×</button>
+        `;
+        
+        limitItem.querySelector('.delete-limit').addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteLimit(limit.id);
+        });
+        
+        ui.limitsList.appendChild(limitItem);
+    });
+    
+    updateLimitsStatus();
+}
+
+// Update deleteLimit to work with IDs
+function deleteLimit(id) {
+    if (confirm('Delete this limit?')) {
+        app.data.limits = app.data.limits.filter(l => l.id !== id);
+        saveLimits();
+        loadLimits();
+        showAlert('Limit deleted', 'success');
+    }
+}
+
+// Add profile dropdown toggle
+document.getElementById('profile-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('profile-dropdown').classList.toggle('show');
+});
+
+// Close dropdown when clicking outside
+window.addEventListener('click', function(e) {
+    if (!e.target.closest('.user-profile')) {
+        const dropdown = document.getElementById('profile-dropdown');
+        if (dropdown.classList.contains('show')) {
+            dropdown.classList.remove('show');
+        }
+    }
+});
+
+// Update the init function to show user info
+function init() {
+    setupEventListeners();
+    initChart();
+    loadGoals();
+    loadLimits();
+    loadLimitSettings();
+    refreshUI();
+    showPage('expenses-page');
+    initKiTips();
+    
+    // Show user info in profile
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    document.getElementById('profile-name').textContent = currentUser.name;
+    document.getElementById('profile-email').textContent = currentUser.email;
+    
+    // Populate category dropdown when opening limit modal
+    document.getElementById('add-limit').addEventListener('click', function() {
+        populateCategoryDropdown();
+    });
+}
         // Initialize the app
         init();
     }
