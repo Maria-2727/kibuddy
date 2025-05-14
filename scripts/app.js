@@ -161,6 +161,7 @@ setTimeout(() => {
             limitsStatus: document.getElementById('limits-status'),
             autoLimitBtn: document.getElementById('auto-limit-btn'),
             resetLimitsBtn: document.getElementById('reset-limits-btn'),
+            limitPeriod: document.getElementById('limit-period'),
             limitsSettingsBtn: document.getElementById('limits-settings-btn'),
             
             // Modals
@@ -1157,7 +1158,7 @@ function init() {
     }
 });
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/service-worker.js')
+  navigator.serviceWorker.register('/sw.js')
     .then(function(registration) {
       console.log('Service Worker registered with scope:', registration.scope);
     })
