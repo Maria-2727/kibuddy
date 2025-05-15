@@ -806,7 +806,13 @@ setTimeout(() => {
         }
     });
 
-    if (ui.addLimitBtn) ui.addLimitBtn.addEventListener('click', addLimit);
+    if (ui.addLimitBtn) {
+    ui.addLimitBtn.addEventListener('click', () => {
+        populateCategoryDropdown(); // <--- ДОБАВЛЕНО
+        addLimit();
+    });
+}
+
     if (ui.confirmLimit) ui.confirmLimit.addEventListener('click', saveLimit);
     if (ui.saveLimitSettings) ui.saveLimitSettings.addEventListener('click', saveLimitSettings);
 
@@ -1026,15 +1032,17 @@ function loadLimits() {
     ui.limitsList.innerHTML = '';
     
     if (app.data.limits.length === 0) {
-        ui.limitsList.innerHTML = `
-            <div class="no-limits">
-                <i class="fas fa-sliders-h"></i>
-                <p>No spending limits set</p>
-            </div>
-        `;
-        ui.limitsStatus.textContent = 'No active limits';
-        return;
-    }
+    ui.limitsList.innerHTML = `
+        <div class="no-limits">
+            <i class="fas fa-sliders-h"></i>
+            <p>No spending limits set</p>
+        </div>
+    `;
+    ui.limitsStatus.textContent = 'No active limits';
+    ui.limitsStatus.parentElement.className = 'limits-info-banner';
+    return;
+}
+
     
     const now = new Date();
     const expensesByCategory = {};
