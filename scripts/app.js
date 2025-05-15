@@ -244,6 +244,10 @@ setTimeout(() => {
             
             saveData();
             refreshUI();
+            if (type === 'expense') {
+    loadLimits(); // Обновить лимиты после новой траты
+}
+
             showAlert(`${typeText} added successfully!`, 'success');
         }
 
@@ -258,6 +262,10 @@ setTimeout(() => {
                 }
                 saveData();
                 refreshUI();
+                if (type === 'expense') {
+    loadLimits(); // Обновить лимиты после удаления траты
+}
+
             }
         }
 
