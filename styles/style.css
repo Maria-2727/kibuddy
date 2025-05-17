@@ -1220,6 +1220,11 @@ h3 {
     cursor: pointer;
 }
 
+#profile-modal h2 {
+    color: #1E7251;
+    /* ✅ основной зелёный заголовок */
+}
+
 .profile-details {
     margin-top: 1rem;
     display: flex;
@@ -1230,36 +1235,20 @@ h3 {
 .profile-details p {
     margin-bottom: 0.5rem;
     color: var(--text-medium);
+    /* Подписи */
 }
 
 .profile-details strong {
     color: var(--primary-main);
+    /* Названия полей */
 }
 
 .profile-details p span {
     color: var(--text-dark);
+    /* ✅ значениe: Name, Email, Currency — тёмный текст */
 }
 
-#profile-modal h2 {
-    color: #1E7251;
-}
-
-#user-profile-btn {
-    background: none;
-    border: none;
-    color: var(--text-light);
-    font-size: 1.5rem;
-    cursor: pointer;
-}
-
-#user-profile-btn i {
-    color: var(--text-light);
-}
-
-#user-profile-btn:hover {
-    opacity: 0.7;
-}
-
+/* Profile form */
 #edit-profile-form .form-group {
     position: relative;
     margin-bottom: 0.75rem;
@@ -1278,7 +1267,10 @@ h3 {
     padding: 0.5rem;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
-    transition: border-color var(--transition-fast);
+    font-family: inherit;
+    font-weight: normal;
+    color: var(--text-dark);
+    /* ✅ тёмный текст */
 }
 
 #edit-profile-form input:focus,
@@ -1287,26 +1279,19 @@ h3 {
     outline: none;
 }
 
-#edit-profile-form input:focus+label,
-#edit-profile-form input:valid+label,
-#edit-profile-form select:focus+label,
-#edit-profile-form select:valid+label {
-    top: -0.5rem;
-    font-size: 0.8rem;
-    color: var(--primary-main);
-}
-
 #edit-profile-form button[type="submit"] {
     margin-top: 1rem;
 }
 
 /* Кнопки */
-button.save-btn,
-button.auth-btn {
+.save-btn,
+.auth-btn {
     border: none;
     padding: 0.75rem 1rem;
     border-radius: var(--border-radius-md);
     font-size: 1rem;
+    font-family: inherit;
+    font-weight: normal;
     cursor: pointer;
     transition: var(--transition-medium);
     display: inline-flex;
@@ -1316,25 +1301,42 @@ button.auth-btn {
     text-decoration: none;
 }
 
-/* Save Changes button (зелёная, обычный шрифт) */
 .save-btn {
     background-color: var(--primary-dark);
     color: white;
-    font-weight: normal;
 }
 
 .save-btn:hover {
     background-color: var(--primary-main);
 }
 
-/* Login / Register button (зелёная, жирный шрифт) */
 .auth-btn {
-    background-color: var(--primary-main);
+    background-color: #1A5E43;
     color: white;
-    font-weight: bold;
     border: none;
 }
 
 .auth-btn:hover {
-    background-color: var(--primary-dark);
+    background-color: #1E7251;
+}
+#user-profile-btn {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    /* можно увеличить, если нужно */
+    color: var(--text-light);
+    /* или white, если темная тема */
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+#user-profile-btn i {
+    color: var(--text-light);
+    /* основной цвет иконки */
+    transition: opacity 0.3s;
+}
+
+#user-profile-btn:hover i {
+    opacity: 0.7;
 }
