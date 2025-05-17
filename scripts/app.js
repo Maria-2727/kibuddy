@@ -183,17 +183,104 @@ setTimeout(() => {
             navBtns: document.querySelectorAll('.nav-btn'),
             periodBtns: document.querySelectorAll('.period-btn'),
             
-            // User info
-            userName: document.getElementById('user-name'),
-            logoutBtn: document.getElementById('logout-btn')
+            
+            // ... existing UI elements ...
+     // ... в объекте ui:
+userName: document.getElementById('user-name'),
+userProfileBtn: document.getElementById('user-profile-btn'),
+profileModal: document.getElementById('profile-modal'),
+profileName: document.getElementById('profile-name'),
+profileEmail: document.getElementById('profile-email'),
+profileCurrency: document.getElementById('profile-currency'),
+editProfileBtn: document.getElementById('edit-profile-btn'),
+logoutProfileBtn: document.getElementById('logout-profile-btn'),
+closeModal: document.querySelectorAll('.close-modal'),
+profileDetails: document.querySelector('.profile-details'),  // New
+editProfileForm: document.getElementById('edit-profile-form'),  // New
+editNameInput: document.getElementById('edit-name'),  // New
+editEmailInput: document.getElementById('edit-email'),  // New
+editCurrencySelect: document.getElementById('edit-currency'),  // New
+cancelEditBtn: document.getElementById('cancel-edit-btn')   // New
+   // New
         };
 
         // Set user info
-        ui.userName.textContent = currentUser.name;
-        ui.logoutBtn.addEventListener('click', function() {
-            localStorage.removeItem('currentUser');
-            location.reload();
-        });
+        
+        ui.logoutProfileBtn.addEventListener('click', function() {
+    localStorage.removeItem('currentUser');
+    location.reload();
+});
+
+       function setupProfileEventListeners() {
+    ui.userProfileBtn.addEventListener('click', showProfileModal);
+    ui.closeModal.forEach(btn => btn.addEventListener('click', closeAllModals));
+    ui.editProfileBtn.addEventListener('click', showEditProfileForm);  // Change this line
+    ui.logoutProfileBtn.addEventListener('click', logout);
+    ui.editProfileForm.addEventListener('submit', saveProfileChanges);  // New
+    ui.cancelEditBtn.addEventListener('click', showProfileDetails);  // New
+}
+
+
+function showProfileModal() {
+    ui.profileName.textContent = currentUser.name;
+    ui.profileEmail.textContent = currentUser.email;
+    ui.profileCurrency.textContent = currentUser.currency;
+    ui.profileModal.style.display = 'block';
+    showProfileDetails(); //  Ensure profile details are shown initially
+}
+
+       function showEditProfileForm() {
+    ui.profileDetails.style.display = 'none';
+    ui.editProfileForm.style.display = 'block';
+    ui.editNameInput.value = currentUser.name;
+    ui.editEmailInput.value = currentUser.email;
+    ui.editCurrencySelect.value = currentUser.currency;
+       }
+        
+        function showProfileDetails() {
+    ui.profileDetails.style.display = 'block';
+    ui.editProfileForm.style.display = 'none';
+}
+
+function saveProfileChanges(event) {
+    event.preventDefault();  // Prevent form submission
+
+    const newName = ui.editNameInput.value;
+    const newEmail = ui.editEmailInput.value;
+    const newCurrency = ui.editCurrencySelect.value;
+    // Update currentUser
+    currentUser.name = newName;
+    currentUser.email = newEmail;
+    currentUser.currency = newCurrency;
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+    // Update users array in localStorage (if you're storing all users)
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    const userIndex = users.findIndex(u => u.id === currentUser.id);
+    if (userIndex !== -1) {
+        users[userIndex] = currentUser;
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+
+    // Update UI
+    ui.profileName.textContent = newName;
+    ui.profileEmail.textContent = newEmail;
+    ui.profileCurrency.textContent = newCurrency;
+    showProfileDetails();
+    showAlert('Profile updated!', 'success');
+
+    }
+        
+function closeAllModals() {
+    ui.profileModal.style.display = 'none';
+    ui.limitSettingsModal.style.display = 'none';
+    ui.limitModal.style.display = 'none';
+}
+
+function logout() {
+    localStorage.removeItem('currentUser');
+    location.reload();
+}
 
         // 3. Core Functions
 
@@ -899,11 +986,14 @@ setTimeout(() => {
         }
 
         // Initialize the app
+        setupProfileEventListeners();
+    initKiTips();
+        
         init();
     }
 });
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/service-worker.js')
+  navigator.serviceWorker.register('/sw.js')
     .then(function(registration) {
       console.log('Service Worker registered with scope:', registration.scope);
     })

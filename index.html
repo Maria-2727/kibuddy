@@ -95,14 +95,15 @@
                 <div id="current-date" class="current-date">Loading...</div>
             </div>
             <div class="user-info">
-                <span id="user-name"></span>
-                <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                <button id="user-profile-btn"><i class="fas fa-user-circle"></i></button>
+
             </div>
+
 
             <div class="savings-progress-container">
                 <div class="progress-labels">
                     <span id="savings-text">0% to goal</span>
-                    <span id="savings-amount">$0/$2000</span>
+
                 </div>
                 <div class="progress-bar-bg">
                     <div class="progress-bar-fill" id="savings-progress"></div>
@@ -394,6 +395,38 @@
                 <button id="save-limit-settings" class="save-btn">
                     <i class="fas fa-save"></i> Save Settings
                 </button>
+            </div>
+        </div>
+        <div id="profile-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2><i class="fas fa-user-circle"></i> User Profile</h2>
+                <div class="profile-details">
+                    <p><strong>Name:</strong> <span id="profile-name"></span></p>
+                    <p><strong>Email:</strong> <span id="profile-email"></span></p>
+                    <p><strong>Currency:</strong> <span id="profile-currency"></span></p>
+                    <button id="edit-profile-btn" class="save-btn"><i class="fas fa-edit"></i> Edit Profile</button>
+                    <button id="logout-profile-btn" class="auth-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
+                <form id="edit-profile-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="edit-name">Name</label>
+                        <input type="text" id="edit-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-email">Email</label>
+                        <input type="email" id="edit-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-currency">Currency</label>
+                        <select id="edit-currency" required>
+                            <option value="USD" selected>USD ($)</option>
+                            <option value="EUR">EUR (€)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="save-btn"><i class="fas fa-save"></i> Save Changes</button>
+                    <button type="button" id="cancel-edit-btn" class="auth-btn">Cancel</button>
+                </form>
             </div>
         </div>
 

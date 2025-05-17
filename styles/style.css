@@ -87,18 +87,26 @@ h3 {
 
 .header-top {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    /* Change to column */
+    align-items: flex-start;
+    /* Align to the start */
+    margin-bottom: 1rem;
 }
 
 .app-title {
-    font-weight: 700;
-    color: var(--text-light);
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    /* Add some space below title */
 }
 
 .current-date {
-    opacity: 0.9;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    opacity: 0.8;
+    align-self: flex-start;
+    /* Align date to the start */
 }
 
 /* ===== Прогресс-бар целей ===== */
@@ -1158,4 +1166,215 @@ h3 {
     gap: 0.5rem;
     flex-wrap: wrap;
     font-size: 0.95rem;
+}
+
+/* Add to existing styles */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    flex-direction: row;
+    /* Ensure it's a row */
+}
+
+/* Profile Modal Styles */
+#profile-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: var(--modal-bg);
+    /* semi-transparent black */
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    width: 80%;
+    max-width: 500px;
+    border-radius: var(--border-radius-md);
+    position: relative;
+}
+
+.close-modal {
+    color: #aaa;
+    position: absolute;
+    right: 10px;
+    top: 0px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.profile-details {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.profile-details p {
+    margin-bottom: 0.5rem;
+}
+
+#user-profile-btn {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    /* Inherit text color */
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+#user-profile-btn i {
+    color: var(--text-light);
+    /* Force white color for the icon */
+}
+
+#user-profile-btn:hover {
+    opacity: 0.7;
+}
+
+.profile-details p {
+    margin-bottom: 0.5rem;
+    color: var(--text-medium);
+    /* Change text color */
+}
+
+/* Optional: Change the color of the labels too */
+.profile-details strong {
+    color: var(--primary-main);
+}
+
+#edit-profile-form .form-group {
+    margin-bottom: 0.75rem;
+}
+
+#edit-profile-form label {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--text-medium);
+}
+
+#edit-profile-form input,
+#edit-profile-form select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+}
+
+#edit-profile-form button[type="submit"] {
+    margin-top: 1rem;
+}
+
+#profile-modal h2 {
+    color: #1E7251;
+}
+
+.profile-details p span {
+    color: var(--text-medium);
+    /* Keep the grey for values */
+}
+
+.profile-details p span {
+    color: var(--text-dark);
+    /* Darker grey for values */
+}
+
+#edit-profile-form .form-group {
+    position: relative;
+    /* Add relative positioning */
+    margin-bottom: 0.75rem;
+}
+
+#edit-profile-form label {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--text-medium);
+    transition: all var(--transition-fast);
+}
+
+#edit-profile-form input,
+#edit-profile-form select {
+    width: 100%;
+    padding: 0.5rem;
+    /* Без лишнего отступа слева */
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    transition: border-color var(--transition-fast);
+}
+
+#edit-profile-form input:focus,
+#edit-profile-form select:focus {
+    border-color: var(--primary-main);
+    outline: none;
+}
+
+#edit-profile-form input:focus+label,
+#edit-profile-form input:valid+label,
+#edit-profile-form select:focus+label,
+#edit-profile-form select:valid+label {
+    top: -0.5rem;
+    font-size: 0.8rem;
+    color: var(--primary-main);
+}
+
+#edit-profile-form button[type="submit"] {
+    margin-top: 1rem;
+}
+
+.save-btn,
+.auth-btn {
+    border: none;
+    padding: 0.75rem 1rem;
+    /* Adjust padding as needed */
+    border-radius: var(--border-radius-md);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition-medium);
+    display: inline-flex;
+    /* Use inline-flex for better alignment */
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    /* Remove underlines from links */
+}
+
+.save-btn {
+    background-color: var(--primary-dark);
+    color: white;
+}
+
+.save-btn:hover {
+    background-color: var(--primary-main);
+}
+
+.auth-btn {
+    background-color: var(--card-bg);
+    /* Or a lighter color */
+    color: var(--primary-dark);
+    border: 1px solid var(--border-color);
+}
+
+.auth-btn:hover {
+    background-color: var(--bg-main);
+    /* Or a slightly darker color */
 }
