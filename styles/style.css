@@ -165,6 +165,7 @@ h3 {
 
 .date-picker {
     flex-grow: 1;
+    
     padding: 0.75rem;
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: var(--border-radius-sm);
@@ -1352,4 +1353,38 @@ h3 {
     /* слегка зеленоватый фон при наведении */
     color: #1E7251;
     border-color: #1E7251;
+}
+.form-group input[type="date"] {
+    width: 100%;
+    max-width: 250px;
+    /* ✅ Ограничивает ширину на больших экранах */
+    padding: 0.65rem;
+    font-size: 0.95rem;
+}
+@media (max-width: 480px) {
+    .form-group input[type="date"] {
+        max-width: 100%;
+        font-size: 0.9rem;
+    }
+}
+@media (max-width: 480px) {
+    .goal-card .form-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .goal-card .form-group input[type="text"],
+    .goal-card .form-group input[type="date"],
+    .goal-card .form-group .custom-date-display {
+        width: 100%;
+        max-width: 220px;
+        /* ✅ ограничивает ширину */
+        font-size: 0.9rem;
+    }
+
+    .goal-card .form-group .custom-date-display {
+        padding: 0.6rem 0.8rem;
+        text-align: center;
+    }
 }
