@@ -209,7 +209,10 @@ cancelEditBtn: document.getElementById('cancel-edit-btn')   // New
         ui.logoutProfileBtn.addEventListener('click', function() {
     localStorage.removeItem('currentUser');
     location.reload();
-});
+        });
+
+        populateLimitCategories();
+
 
        function setupProfileEventListeners() {
     ui.userProfileBtn.addEventListener('click', showProfileModal);
@@ -220,6 +223,22 @@ cancelEditBtn: document.getElementById('cancel-edit-btn')   // New
     ui.cancelEditBtn.addEventListener('click', showProfileDetails);  // New
 }
 
+function populateLimitCategories() {
+    const categories = [...new Set(app.data.expenses.map(e => e.category))];
+    ui.limitCategory.innerHTML = ''; // очистить
+
+    if (categories.length === 0) {
+        ui.limitCategory.innerHTML = '<option disabled>No expense categories yet</option>';
+        return;
+    }
+
+    categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        ui.limitCategory.appendChild(option);
+    });
+}
 
 function showProfileModal() {
     ui.profileName.textContent = currentUser.name;
@@ -327,10 +346,15 @@ function logout() {
                 app.data.expenses.push(transaction);
                 checkLimits();
             }
+            populateLimitCategories(); // обновление списка категорий лимитов
+
             
             saveData();
             refreshUI();
-            showAlert(`${typeText} added successfully!`, 'success');
+
+            loadLimits(); // обновить лимиты
+showAlert(`${typeText} added successfully!`, 'success');
+
         }
 
         // Delete transaction
@@ -342,6 +366,8 @@ function logout() {
                     app.data.expenses = app.data.expenses.filter(t => t.id !== id);
                     checkLimits();
                 }
+                populateLimitCategories(); // обновление после удаления
+
                 saveData();
                 refreshUI();
             }
@@ -576,8 +602,13 @@ function logout() {
                     </div>
                 `;
                 ui.limitsStatus.textContent = 'No active limits';
+ui.limitsStatus.parentElement.className = 'limits-info-banner no-limits-style';
+    
+        
                 return;
             }
+            ui.limitsStatus.parentElement.className = 'limits-info-banner';
+
             
             const expensesByCategory = {};
             app.data.expenses.forEach(expense => {
@@ -625,79 +656,87 @@ function logout() {
         }
         
         function updateLimitsStatus(expensesByCategory) {
-            let totalLimits = 0;
-            let totalSpent = 0;
-            let exceededLimits = 0;
-            let warningLimits = 0;
-            
-            app.data.limits.forEach(limit => {
-                const spent = expensesByCategory[limit.category] || 0;
-                const percentage = (spent / limit.amount) * 100;
-                
-                totalLimits += limit.amount;
-                totalSpent += spent;
-                
-                if (percentage >= 100) {
-                    exceededLimits++;
-                } else if (percentage >= app.data.limitSettings.warningThreshold) {
-                    warningLimits++;
-                }
-            });
-            
-            const totalPercentage = totalLimits > 0 ? (totalSpent / totalLimits) * 100 : 0;
-            
-            if (exceededLimits > 0) {
-                ui.limitsStatus.textContent = `${exceededLimits} limit(s) exceeded!`;
-                ui.limitsStatus.parentElement.className = 'limits-info-banner danger';
-            } else if (warningLimits > 0) {
-                ui.limitsStatus.textContent = `${warningLimits} limit(s) near threshold`;
-                ui.limitsStatus.parentElement.className = 'limits-info-banner warning';
-            } else {
-                ui.limitsStatus.textContent = `Total: ${formatMoney(totalSpent)} of ${formatMoney(totalLimits)} (${totalPercentage.toFixed(1)}%)`;
-                ui.limitsStatus.parentElement.className = 'limits-info-banner';
-            }
-        }
+    let totalLimits = 0;
+    let totalSpent = 0;
+    let exceededLimits = 0;
+    let warningLimits = 0;
+
+    const banner = ui.limitsStatus.parentElement;
+
+    // Удаляем старые классы
+    banner.classList.remove('danger', 'warning');
+
+    app.data.limits.forEach(limit => {
+        const spent = expensesByCategory[limit.category] || 0;
+        const percentage = (spent / limit.amount) * 100;
+
+        totalLimits += limit.amount;
+        totalSpent += spent;
+
+        if (percentage >= 100) exceededLimits++;
+        else if (percentage >= app.data.limitSettings.warningThreshold) warningLimits++;
+    });
+
+    const totalPercentage = totalLimits > 0 ? (totalSpent / totalLimits) * 100 : 0;
+
+    if (exceededLimits > 0) {
+        ui.limitsStatus.textContent = `${exceededLimits} limit(s) exceeded!`;
+        banner.classList.add('danger');
+    } else if (warningLimits > 0) {
+        ui.limitsStatus.textContent = `${warningLimits} limit(s) near threshold`;
+        banner.classList.add('warning');
+    } else if (totalLimits === 0) {
+        ui.limitsStatus.textContent = 'No active limits';
+    } else {
+        ui.limitsStatus.textContent = `Total: ${formatMoney(totalSpent)} of ${formatMoney(totalLimits)} (${totalPercentage.toFixed(1)}%)`;
+    }
+}
 
         function addLimit() {
             ui.limitModal.style.display = 'block';
         }
 
         function saveLimit() {
-            const category = ui.limitCategory.value.trim();
-            const amount = parseFloat(ui.limitAmount.value);
-            
-            if (!category || isNaN(amount)) {
-                alert('Please fill all fields correctly');
-                return;
+    const category = ui.limitCategory.value.trim();
+    const amount = parseFloat(ui.limitAmount.value);
+
+    if (!category || isNaN(amount)) {
+        alert('Please fill all fields correctly');
+        return;
+    }
+
+    let finalAmount = amount;
+
+    if (ui.autoAdjustLimit.checked) {
+        const expenses = app.data.expenses.filter(e => e.category === category);
+        const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
+        const adjustedAmount = totalSpent * (app.data.limitSettings.autoAdjustPercentage / 100);
+
+        if (adjustedAmount > amount) {
+            const confirmAdjust = confirm(`Auto-adjust suggests ${formatMoney(adjustedAmount)} based on your spending. Use it instead of ${formatMoney(amount)}?`);
+            if (confirmAdjust) {
+                finalAmount = parseFloat(adjustedAmount.toFixed(2));
             }
-            
-            if (ui.autoAdjustLimit.checked) {
-                const expenses = app.data.expenses.filter(e => e.category === category);
-                const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
-                const adjustedAmount = totalSpent * (app.data.limitSettings.autoAdjustPercentage / 100);
-                
-                if (adjustedAmount > amount) {
-                    if (!confirm(`Auto-adjust will set limit to ${formatMoney(adjustedAmount)} based on your spending history. Continue?`)) {
-                        return;
-                    }
-                    ui.limitAmount.value = adjustedAmount.toFixed(2);
-                }
-            }
-            
-            app.data.limits.push({
-                category,
-                amount: parseFloat(ui.limitAmount.value)
-            });
-            
-            saveLimits();
-            loadLimits();
-            ui.limitModal.style.display = 'none';
-            ui.limitCategory.value = '';
-            ui.limitAmount.value = '';
-            ui.autoAdjustLimit.checked = false;
-            
-            showAlert('Limit added successfully!', 'success');
         }
+    }
+
+    app.data.limits.push({
+        category,
+        amount: finalAmount
+    });
+
+    saveLimits();
+    loadLimits();
+
+    ui.limitModal.style.display = 'none';
+    ui.limitCategory.value = '';
+    ui.limitAmount.value = '';
+    ui.autoAdjustLimit.checked = false;
+
+    showAlert('Limit added successfully!', 'success');
+}
+
+
 
         function deleteLimit(index) {
             if (confirm('Delete this limit?')) {
@@ -1001,3 +1040,12 @@ if ('serviceWorker' in navigator) {
       console.log('Service Worker registration failed:', error);
     });
 }
+window.addEventListener('load', () => {
+    const splash = document.getElementById('splash-screen');
+    setTimeout(() => {
+        splash.classList.add('hidden');
+        setTimeout(() => {
+            splash.style.display = 'none';
+        }, 500);
+    }, 1200);
+});
