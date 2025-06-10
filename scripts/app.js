@@ -129,7 +129,7 @@ setTimeout(() => {
             prevBtn: document.getElementById('prev-period'),
             nextBtn: document.getElementById('next-period'),
             dateInput: document.getElementById('date-selector'),
-            dateDisplay: document.getElementById('current-date'),
+            
             budget: document.getElementById('budget-amount'),
             
             // Lists
@@ -391,7 +391,7 @@ showAlert(`${typeText} added successfully!`, 'success');
                 month: 'long', 
                 day: 'numeric' 
             };
-            ui.dateDisplay.textContent = app.date.toLocaleDateString('en-US', options);
+            
             ui.dateInput.valueAsDate = app.date;
         }
 
